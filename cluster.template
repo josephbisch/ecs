@@ -11,17 +11,7 @@
   },
   "Mappings": {
     "EcsAmisByRegion": {
-      "us-east-1": {"ami": "ami-275ffe31"},
-      "us-east-2": {"ami": "ami-62745007"},
-      "us-west-1": {"ami": "ami-689bc208"},
-      "us-west-2": {"ami": "ami-62d35c02"},
-      "eu-west-1": {"ami": "ami-95f8d2f3"},
-      "eu-west-2": {"ami": "ami-bf9481db"},
-      "eu-central-1": {"ami": "ami-085e8a67"},
-      "ap-northeast-1": {"ami": "ami-f63f6f91"},
-      "ap-southeast-1": {"ami": "ami-b4ae1dd7"},
-      "ap-southeast-2": {"ami": "ami-fbe9eb98"},
-      "ca-central-1": {"ami": "ami-ee58e58a"}
+      "us-east-1": {"ami": "ami-717f720a"},
     }
   },
   "Resources": {
@@ -61,7 +51,7 @@
         "LaunchConfigurationName": {"Ref": "LaunchConfig"},
         "DesiredCapacity": "1",
         "MinSize": "0",
-        "MaxSize": "4"
+        "MaxSize": "1"
       },
       "CreationPolicy": {
         "ResourceSignal": {
@@ -80,8 +70,14 @@
             "Fn::Join": ["", [
               "#!/bin/bash\n",
               "echo ECS_CLUSTER=", {"Ref": "Cluster"}, " >> /etc/ecs/ecs.config\n",
-              "yum install -y aws-cfn-bootstrap\n",
-              "/opt/aws/bin/cfn-signal -e $? --resource AutoScalingGroup --stack ", {"Ref": "AWS::StackName"}, " --region ", {"Ref": "AWS::Region"}
+              "apt-get update",
+              "apt-get install python-pip python-yaml unattended-upgrades",
+              "pip install pystache argparse python-daemon",
+              "wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz",
+              "tar -xvpf aws-cfn-bootstrap-latest.tar.gz",
+              "cd aws-cfn-bootstrap-*",
+              "python setup.py build && python setup.py install",
+              "cfn-signal -e $? --resource AutoScalingGroup --stack ", {"Ref": "AWS::StackName"}, " --region ", {"Ref": "AWS::Region"}
             ]]
           }
         }
